@@ -44,7 +44,7 @@ describe 'definitions', ->
     it 'registered hear canadian temperature', ->
       expect(spies.hear).to.have.been.calledWith(/(-?\d+)\s?(C|Celsius)\b/i)
 
-  describe 'test conversion to Celsius', ->
+  describe 'test conversions to Canadian', ->
     it 'responds to 39F', (done) ->
       adapter.on 'send', (envelope, strings) ->
         expect(strings[0]).to.match /39 in Fahrenheit is 3 degrees Celsius/
@@ -52,7 +52,14 @@ describe 'definitions', ->
 
       adapter.receive(new TextMessage user, 'it is 39F today')
 
-  describe 'test conversion to Fahrenheit', ->
+    it 'responds to 39 Fahrenheit', (done) ->
+      adapter.on 'send', (envelope, strings) ->
+        expect(strings[0]).to.match /39 in Fahrenheit is 3 degrees Celsius/
+        done()
+
+      adapter.receive(new TextMessage user, 'it is 39 Fahrenheit today')
+
+  describe 'test conversions to American', ->
     it 'responds to 12C', (done) ->
       adapter.on 'send', (envelope, strings) ->
         expect(strings[0]).to.match /12 in Celsius is 53 degrees Fahrenheit/
@@ -60,3 +67,9 @@ describe 'definitions', ->
 
       adapter.receive(new TextMessage user, 'hubot: it feels like 12C today')
 
+    it 'responds to 12 Celsius', (done) ->
+      adapter.on 'send', (envelope, strings) ->
+        expect(strings[0]).to.match /12 in Celsius is 53 degrees Fahrenheit/
+        done()
+
+      adapter.receive(new TextMessage user, 'hubot: it feels like 12 Celsius today')
