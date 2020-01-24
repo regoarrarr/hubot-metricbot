@@ -1,11 +1,8 @@
 chai = require 'chai'
 sinon = require 'sinon'
 chai.use require 'sinon-chai'
-chaiFiles = require 'chai-files'
-chai.use chaiFiles
 
 expect = chai.expect
-file = chaiFiles.file
 
 Robot       = require 'hubot/src/robot'
 TextMessage = require('hubot/src/message').TextMessage
@@ -39,3 +36,40 @@ describe 'definitions', ->
 
   afterEach ->
     robot.shutdown()
+
+  describe 'listeners', ->
+    it 'registered hear american temperature', ->
+      expect(spies.hear).to.have.been.calledWith(/(-?\d+)\s?(F|Fahrenheit)\b/i)
+
+    it 'registered hear canadian temperature', ->
+      expect(spies.hear).to.have.been.calledWith(/(-?\d+)\s?(C|Celsius)\b/i)
+
+  describe 'test conversions to Canadian', ->
+    it 'responds to 39F', (done) ->
+      adapter.on 'send', (envelope, strings) ->
+        expect(strings[0]).to.match /39 in Fahrenheit is 3 degrees Celsius/
+        done()
+
+      adapter.receive(new TextMessage user, 'it is 39F today')
+
+    it 'responds to 39 Fahrenheit', (done) ->
+      adapter.on 'send', (envelope, strings) ->
+        expect(strings[0]).to.match /39 in Fahrenheit is 3 degrees Celsius/
+        done()
+
+      adapter.receive(new TextMessage user, 'it is 39 Fahrenheit today')
+
+  describe 'test conversions to American', ->
+    it 'responds to 12C', (done) ->
+      adapter.on 'send', (envelope, strings) ->
+        expect(strings[0]).to.match /12 in Celsius is 53 degrees Fahrenheit/
+        done()
+
+      adapter.receive(new TextMessage user, 'hubot: it feels like 12C today')
+
+    it 'responds to 12 Celsius', (done) ->
+      adapter.on 'send', (envelope, strings) ->
+        expect(strings[0]).to.match /12 in Celsius is 53 degrees Fahrenheit/
+        done()
+
+      adapter.receive(new TextMessage user, 'hubot: it feels like 12 Celsius today')
