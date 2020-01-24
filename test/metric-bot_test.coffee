@@ -7,7 +7,7 @@ expect = chai.expect
 Robot       = require 'hubot/src/robot'
 TextMessage = require('hubot/src/message').TextMessage
 
-describe 'definitions', ->
+describe 'metric-bot', ->
   robot = {}
   user = {}
   adapter = {}
@@ -19,7 +19,6 @@ describe 'definitions', ->
 
     robot.adapter.on 'connected', =>
       spies.hear = sinon.spy(robot, 'hear')
-      spies.respond = sinon.spy(robot, 'respond')
 
       require('../src/metric-bot')(robot)
 
@@ -65,11 +64,56 @@ describe 'definitions', ->
         expect(strings[0]).to.match /12 in Celsius is 53 degrees Fahrenheit/
         done()
 
-      adapter.receive(new TextMessage user, 'hubot: it feels like 12C today')
+      adapter.receive(new TextMessage user, 'it feels like 12C today')
 
     it 'responds to 12 Celsius', (done) ->
       adapter.on 'send', (envelope, strings) ->
         expect(strings[0]).to.match /12 in Celsius is 53 degrees Fahrenheit/
         done()
 
-      adapter.receive(new TextMessage user, 'hubot: it feels like 12 Celsius today')
+      adapter.receive(new TextMessage user, 'it feels like 12 Celsius today')
+
+
+describe 'negative assertions', ->
+  robot = {}
+  user = {}
+  adapter = {}
+  spies = {}
+
+  beforeEach (done) ->
+    # Create new robot, with http, using mock adapter
+    robot = new Robot null, 'mock-adapter', true
+
+    robot.adapter.on 'connected', =>
+      spies.hear = sinon.spy(robot, 'hear')
+      spies.catchAll = sinon.spy(robot, 'catchAll')
+
+      require('../src/metric-bot')(robot)
+
+      user = robot.brain.userForId '1', {
+        name: 'user'
+        room: '#test'
+      }
+
+      adapter = robot.adapter
+
+    robot.run()
+
+    done()
+
+  afterEach ->
+    robot.shutdown()
+
+  describe 'test negative patterns', ->
+    it 'does not responds to percent 2C', (done) ->
+      testMessage = new TextMessage(user, 'this is a test%2C%20string.')
+
+      listenerCallback = sinon.spy()
+      robot.hear /(-?\d+)\s?(C|Celsius)\b/i, listenerCallback
+
+      robot.catchAll (response) ->
+        expect(listenerCallback).to.not.have.been.called
+        expect(response.message).to.equal(testMessage)
+        done()
+
+      adapter.receive testMessage
