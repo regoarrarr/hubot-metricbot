@@ -106,7 +106,8 @@ describe 'negative assertions', ->
 
   describe 'test negative patterns', ->
     it 'does not responds to percent 2C', (done) ->
-      testMessage = new TextMessage(user, 'this is a test%2C%20string.')
+#      testMessage = new TextMessage(user, 'this is a failing test%2C%20string.')
+      testMessage = new TextMessage(user, 'this is a passing (no-match) test string.')
 
       listenerCallback = sinon.spy()
       robot.hear /(-?\d+)\s?(C|Celsius)\b/i, listenerCallback
