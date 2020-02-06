@@ -37,13 +37,6 @@ describe 'definitions', ->
   afterEach ->
     robot.shutdown()
 
-  describe 'listeners', ->
-    it 'registered hear american temperature', ->
-      expect(spies.hear).to.have.been.calledWith(/(-?\d+)\s?(F|Fahrenheit)\b/i)
-
-    it 'registered hear canadian temperature', ->
-      expect(spies.hear).to.have.been.calledWith(/(-?\d+)\s?(C|Celsius)\b/i)
-
   describe 'test conversions to Canadian', ->
     it 'responds to 39F', (done) ->
       adapter.on 'send', (envelope, strings) ->
