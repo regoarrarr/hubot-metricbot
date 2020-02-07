@@ -26,33 +26,47 @@ describe 'definitions', ->
       )
     ]
 
+  describe 'test simple conversion', ->
+    it 'converts F to C', ->
+      assert.match await reply('hubot: Convert -40° F to C'), /-40 Fahrenheit is -40 Celsius/
+    it 'converts Celsius to kelvin', -> # note: SI units are lowercase
+      assert.match await reply('hubot: convert -40 Celsius to kelvin'), /-40 Celsius is 233 kelvin/
+    it 'converts miles to kilometers', ->
+      assert.match await reply('hubot: convert 100 miles to kilometers'), /100 miles is 160.9\d* kilometers/i
+    it 'apologizes when no conversion function is defined', ->
+      assert.match await reply('hubot: convert 0 kelvin to kelvin'), /sorry/i
+
   describe 'test conversions to Canadian', ->
     it 'responds to 39F', ->
-      assert.match await reply('it is 39F today'), /39 in Fahrenheit is 3 degrees Celsius/
+      assert.match await reply('it is 39F today'), /39 Fahrenheit is 3 Celsius/
     it 'responds to 39 Fahrenheit', ->
-      assert.match await reply('it is 39 Fahrenheit today'), /39 in Fahrenheit is 3 degrees Celsius/
+      assert.match await reply('it is 39 Fahrenheit today'), /39 Fahrenheit is 3 Celsius/
+    it 'responds to 500 miles', ->
+      assert.match await reply('I would walk 500 miles'), /500 miles is 804.6\d* kilometers/
 
   describe 'test conversions to American', ->
     it 'responds to 12C', ->
-      assert.match await reply('hubot: it feels like 12C today'), /12 in Celsius is 53 degrees Fahrenheit/
+      assert.match await reply('hubot: it feels like 12C today'), /12 Celsius is 53 Fahrenheit/
     it 'responds to 12 Celsius', ->
-      assert.match await reply('hubot: it feels like 12 Celsius today'), /12 in Celsius is 53 degrees Fahrenheit/
+      assert.match await reply('hubot: it feels like 12 Celsius today'), /12 Celsius is 53 Fahrenheit/
 
   describe 'test conversions to American', ->
     it 'responds to 12C', ->
-      assert.match await reply('hubot: it feels like 12C today'), /12 in Celsius is 53 degrees Fahrenheit/
+      assert.match await reply('hubot: it feels like 12C today'), /12 Celsius is 53 Fahrenheit/
     it 'responds to 12 Celsius', ->
-      assert.match await reply('hubot: it feels like 12 Celsius today'), /12 in Celsius is 53 degrees Fahrenheit/
+      assert.match await reply('hubot: it feels like 12 Celsius today'), /12 Celsius is 53 Fahrenheit/
 
   describe 'test negation', ->
     it 'minus', ->
-      assert.match await reply('hubot: it feels like -12C today'), /-12 in Celsius is 10 degrees Fahrenheit/
+      assert.match await reply('hubot: it feels like -12C today'), /-12 Celsius is 10 Fahrenheit/
     it 'minus sign', ->
-      assert.match await reply('hubot: it feels like minus 12 Celsius today'), /-12 in Celsius is 10 degrees Fahrenheit/
+      assert.match await reply('hubot: it feels like minus 12 Celsius today'), /-12 Celsius is 10 Fahrenheit/
+    it 'negative', ->
+      assert.match await reply('hubot: it feels like negative 12 Celsius today'), /-12 Celsius is 10 Fahrenheit/
 
   describe 'test degree sign', ->
     it 'there can be a degree sign immediately after the number of degrees', ->
-      assert.match await reply('hubot: it feels like -12°C today'), /-12 in Celsius is 10 degrees Fahrenheit/
+      assert.match await reply('hubot: it feels like -12°C today'), /-12 Celsius is 10 Fahrenheit/
 
   describe 'test spam prevention', ->
     it 'ignores URLs', ->
