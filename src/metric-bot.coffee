@@ -5,9 +5,10 @@ module.exports = (robot) ->
       symbol: 'F'
       name: 'Fahrenheit'
       matchers: [ 'F', 'Fahrenheit', 'Farenheit' ]
-      condition: "If you can't read 'Murican"
+      reason: "If you can't read 'Murican"
       to:
         C: (degrees) -> Math.floor((degrees - 32) * (5 / 9))
+        K: (degrees) -> Math.floor((degrees + 459.67) * (5 / 9))
       getEmoji: (degrees) ->
         switch
           when degrees <= 32 then ":snowflake:"
@@ -18,23 +19,63 @@ module.exports = (robot) ->
       symbol: 'C'
       name: 'Celsius'
       matchers: [ 'C', 'Celsius', 'Centigrade' ]
-      condition: 'If you live in Liberia, Myanmar or other countries that use the imperial system'
+      reason: 'If you live in Liberia, Myanmar or other countries that use the imperial system'
       to:
         F: (degrees) -> Math.floor((9 * degrees / 5) + 32)
+        K: (degrees) -> Math.floor(degrees + 273.15)
       getEmoji: (degrees) ->
         switch
           when degrees <= 0 then ":snowflake:"
           when degrees < 26 then ":sun_behind_cloud:"
           else ":fire:"
+    },
+    {
+      symbol: 'K'
+      name: 'kelvin'
+      matchers: [ 'K', 'Kelvin', 'kelvin' ]
+      reason: 'If you\'re a quantum mechanic'
+      to:
+        C: (degrees) -> Math.floor(degrees - 273.15)
+        F: (degrees) -> Math.floor(degrees * (9 / 5) + 459.67)
+      getEmoji: (degrees) -> ""
+    },
+    {
+      symbol: 'mi'
+      name: 'miles'
+      matchers: [ 'mile', 'miles', 'mi' ]
+      reason: 'If you live in Liberia, Myanmar or other countries that use the imperial system'
+      to:
+        km: (n) -> n * 1.609344
+      getEmoji: (n) -> ""
+    },
+    {
+      symbol: 'km'
+      name: 'kilometers'
+      matchers: [ 'kilometer', 'kilometers', 'km' ]
+      reason: "If you can't read 'Murican"
+      to:
+        mi: (n) -> n / 1.609344
+      getEmoji: (n) -> ""
     }
   ]
 
+  negationTokens = 'negative |minus |-'
   unitTokens = units.flatMap( (unit) -> unit.matchers).join('|')
-  matcher = new RegExp("(?:^|[\\s,.;!?—–()])((?:minus |-)?\\d+)°?\\s?(#{unitTokens})([\\s,.;!?—–()]|$)")
 
-  robot.hear matcher, (res) ->
+  # respond when someone asks to convert between two units specifically
+  robot.hear new RegExp("(?:convert)?\\s*(?:from)?\\s*((?:#{negationTokens})?\\d+)°?\\s?(#{unitTokens}) to (#{unitTokens})\\b", 'i'), (res) ->
     fromUnit = units.find (unit) -> unit.matchers.includes(res.match[2])
-    toUnit = units.find (unit) -> unit != fromUnit # this is silly
-    fromDegrees = +res.match[1].replace(/minus /i, '-')
+    toUnit = units.find (unit) -> unit.matchers.includes(res.match[3])
+    fromDegrees = +res.match[1].replace(new RegExp(negationTokens, 'i'), '-')
+    if (fromUnit.to[toUnit.symbol] == undefined)
+      return res.send "Sorry, I don't know how to convert #{fromUnit.name} to #{toUnit.name}"
     toDegrees = fromUnit.to[toUnit.symbol](fromDegrees)
-    res.send "#{fromUnit.condition}, #{fromDegrees} in #{fromUnit.name} is #{toDegrees} degrees #{toUnit.name} #{toUnit.getEmoji(toDegrees)}"
+    res.send "#{fromDegrees} #{fromUnit.name} is #{toDegrees} #{toUnit.name}"
+
+  # fuzzier matching when someone just mentions an amount
+  robot.hear new RegExp("(?:^|[\\s,.;!?—–()])((?:#{negationTokens})?\\d+)°?\\s?(#{unitTokens})([\\s,.;!?—–()]|$)", 'i'), (res) ->
+    fromUnit = units.find (unit) -> unit.matchers.includes(res.match[2])
+    toUnit = units.find (unit) -> unit.to[fromUnit.symbol] # a conversion function exists
+    fromDegrees = +res.match[1].replace(new RegExp(negationTokens, 'i'), '-')
+    toDegrees = fromUnit.to[toUnit.symbol](fromDegrees)
+    res.send "#{fromUnit.reason}, #{fromDegrees} #{fromUnit.name} is #{toDegrees} #{toUnit.name} #{toUnit.getEmoji(toDegrees)}"
