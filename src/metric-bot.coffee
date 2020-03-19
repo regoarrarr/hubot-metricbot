@@ -65,8 +65,8 @@ module.exports = (robot) ->
 
   # respond when someone asks to convert between two units specifically
   robot.hear new RegExp("(?:convert)?\\s*(?:from)?\\s*(#{number})°?\\s?(#{unitTokens}) to (#{unitTokens})\\b", 'i'), (res) ->
-    fromUnit = units.find (unit) -> unit.matchers.includes(res.match[2])
-    toUnit = units.find (unit) -> unit.matchers.includes(res.match[3])
+    fromUnit = units.find (unit) -> unit.matchers.find (matcher) -> matcher.toLowerCase() == res.match[2].toLowerCase()
+    toUnit = units.find (unit) -> unit.matchers.find (matcher) -> matcher.toLowerCase() == res.match[3].toLowerCase()
     fromDegrees = +res.match[1].replace(new RegExp(negationTokens, 'i'), '-')
     if (fromUnit.to[toUnit.symbol] == undefined)
       return res.send "Sorry, I don't know how to convert #{fromUnit.name} to #{toUnit.name}"
@@ -75,7 +75,7 @@ module.exports = (robot) ->
 
   # fuzzier matching when someone just mentions an amount
   robot.hear new RegExp("(?:^|[\\s,.;!?—–()])(#{number})°?\\s?(#{unitTokens})([\\s,.;!?—–()]|$)", 'i'), (res) ->
-    fromUnit = units.find (unit) -> unit.matchers.includes(res.match[2])
+    fromUnit = units.find (unit) -> unit.matchers.find (matcher) -> matcher.toLowerCase() == res.match[2].toLowerCase()
     toUnit = units.find (unit) -> unit.to[fromUnit.symbol] # a conversion function exists
     fromDegrees = +res.match[1].replace(new RegExp(negationTokens, 'i'), '-')
     toDegrees = fromUnit.to[toUnit.symbol](fromDegrees)
