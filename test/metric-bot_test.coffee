@@ -75,6 +75,8 @@ describe 'definitions', ->
       assert.rejects reply('hubot: 231596cbb5f0321ab77e6f22a558aa8f988fe43d')
     it 'ignores the World Wide Web Consortium', ->
       assert.rejects reply('hubot: I <3 the W3C')
+    it 'ignores mentions of kelvin, since it is not common in conversation', ->
+      assert.rejects reply('hubot: the Baron Kelvin ran a 5k')
 
   describe 'test decimal point', ->
     it 'there can be a decimal point in the number', ->
