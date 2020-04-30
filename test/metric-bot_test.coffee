@@ -75,3 +75,13 @@ describe 'definitions', ->
       assert.rejects reply('hubot: 231596cbb5f0321ab77e6f22a558aa8f988fe43d')
     it 'ignores the World Wide Web Consortium', ->
       assert.rejects reply('hubot: I <3 the W3C')
+    it 'ignores mentions of kelvin, since it is not common in conversation', ->
+      assert.rejects reply('hubot: the Baron Kelvin ran a 5k')
+
+  describe 'test decimal point', ->
+    it 'there can be a decimal point in the number', ->
+      assert.match await reply('hubot: -459.67°F to K'), /-459.67 Fahrenheit is 0 kelvin/
+
+  describe 'test kelvin', ->
+    it 'it converts Kelvin correctly', ->
+      assert.match await reply('hubot: 0 kelvin to F'), /0 kelvin is -459.67 Fahrenheit/
