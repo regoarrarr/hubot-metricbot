@@ -62,7 +62,10 @@ module.exports = (robot) ->
 
   negationTokens = 'negative |minus |-'
   number = "(?:#{negationTokens})?\\d+(?:\\.\\d+)?"
-  unitTokens = units.flatMap( (unit) -> unit.matchers).join('|')
+  unitTokens = units
+    .map (unit) -> unit.matchers
+    .reduce(((allMatchers, matchers) -> allMatchers.concat(matchers)), [])
+    .join '|'
 
   explicitConvertMatcher = new RegExp("(?:convert)?\\s*(?:from)?\\s*(#{number})°?\\s?(#{unitTokens}) to (#{unitTokens})\\b", 'i')
   mentionedUnitMatcher = new RegExp("(?:^|[\\s,.;!?—–()])(#{number})°?\\s?(#{unitTokens})([\\s,.;!?—–()]|$)", 'i')
